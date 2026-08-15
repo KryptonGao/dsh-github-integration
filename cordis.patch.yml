@@ -1,0 +1,4 @@
+# External bundle layer for the DeepSeek Harness web profile.
+- insert:
+    - id: github-integration
+      name: dsh-github-integration

@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "rootDir": "src",
+    "outDir": "lib/types"
+  },
+  "include": ["src/stubs/**/*.d.ts", "src/index.ts", "src/types.ts", "src/remote.ts", "src/typert.host.ts", "src/git/**/*.ts", "src/github/**/*.ts", "src/host/**/*.ts"],
+  "references": []
+}

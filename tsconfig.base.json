@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "target": "es2024",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "verbatimModuleSyntax": false,
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@deepseek-ai/cordis": ["src/stubs/cordis.d.ts"],
+      "@deepseek-ai/schemastery": ["src/stubs/schemastery.d.ts"],
+      "@deepseek-ai/dsh-credentials": ["src/stubs/credentials.d.ts"],
+      "@deepseek-ai/dsh-settings": ["src/stubs/settings.d.ts"],
+      "@deepseek-ai/dsh-subprocess": ["src/stubs/subprocess.d.ts"],
+      "@deepseek-ai/dsh-tools": ["src/stubs/tools.d.ts"],
+      "@deepseek-ai/dsh-typert-protocol": ["src/stubs/typert.d.ts"],
+      "@deepseek-ai/dsh-client-runtime/client": ["src/stubs/runtime.d.ts"],
+      "@deepseek-ai/dsh-client-connection/client": ["src/stubs/connection.d.ts"],
+      "@deepseek-ai/dsh-client-ui-slots": ["src/stubs/slots.d.ts"],
+      "@deepseek-ai/dsh-api-remotes/client": ["src/stubs/empty.d.ts"],
+      "@deepseek-ai/dsh-client-ui-layout/client": ["src/stubs/empty.d.ts"],
+      "@deepseek-ai/dsh-client-ui-sidebar/client": ["src/stubs/empty.d.ts"],
+      "@deepseek-ai/dsh-client-ui-settings/client": ["src/stubs/empty.d.ts"],
+      "@deepseek-ai/dsh-client-ui-conversation/client": ["src/stubs/empty.d.ts"]
+    }
+  }
+}
