@@ -8,7 +8,7 @@
 
 它把 GitHub 仓库绑定到当前 Workspace，在 Harness 内提供 Issues、Pull requests 和 Changes 三个视图；Host 端处理本地 Git、GitHub API 与凭据，Client 端只负责界面和交互。
 
-> 当前 MVP 面向公开 `github.com` 仓库，支持 `origin` 的 HTTPS / SSH 地址；暂不支持 GitHub Enterprise。
+> 当前 MVP 面向公开 `github.com` 仓库，支持 `upstream` 的 HTTPS / SSH 地址；暂不支持 GitHub Enterprise。
 
 ## 能做什么
 
@@ -39,7 +39,14 @@ dsh plugin --profile web add "$PWD"
 2. 打开 **Settings → GitHub**，点击 **Connect GitHub**。
 3. 在系统浏览器中完成 GitHub App 授权，回到 Harness 等待连接状态变为 **Connected**。
 4. 如需调整仓库范围，点击 **Manage repository access**。
-5. 确认当前 Workspace 的 `origin` 指向 `github.com` 上的仓库（HTTPS 或 SSH）。
+5. 确认当前 Workspace 的 `upstream` 指向 `github.com` 上的仓库（HTTPS 或 SSH）：
+
+   ```sh
+   git remote add upstream git@github.com:OWNER/REPOSITORY.git
+   # 如果 upstream 已存在：
+   git remote set-url upstream git@github.com:OWNER/REPOSITORY.git
+   ```
+
 6. 回到 Workspace 视图，打开顶部的 **GitHub** 标签页。
 
 普通用户不需要粘贴 PAT、Client Secret、Private Key 或其他 token。OAuth 返回的 user access token 与 refresh token 由 Harness 的安全凭据存储管理。
@@ -87,7 +94,7 @@ GitHub 面板顶部可以为当前 Workspace 选择认证方式：
 - Client 不接触 GitHub access token、refresh token、Client Secret 或 Private Key。
 - GitHub API 请求和 token refresh 在 Host 端完成；installation token 动态生成，不写入插件状态文件或日志。
 - GitHub token 状态持久化在 Harness credential storage；插件自己的 Workspace / Session 关联状态位于 `${DSH_HOME:-~/.dsh}/github-integration/state.json`，文件权限为 `0600`。
-- `origin`、仓库 owner/name 和分支名在 Host 端校验；推送和创建 PR 会经过能力检查。
+- `upstream`、仓库 owner/name 和分支名在 Host 端校验；推送和创建 PR 会经过能力检查。
 - GitHub Issue 内容进入 Session 前会被限制大小并标记为不可信数据。
 
 ## OAuth Broker 部署
@@ -129,7 +136,7 @@ src/index.ts             Host Gateway：Git、GitHub API、认证和能力检查
 src/client/index.tsx     Harness Client UI：GitHub 视图、Settings 和 Session 关联
 src/remote.ts            Host / Client 之间的 remote contract
 src/types.ts             共享数据结构、安全限制和默认 App 配置
-src/git/                 origin 解析、Git 操作和安全 guard
+src/git/                 upstream 解析、Git 操作和安全 guard
 src/github/              OAuth、token storage 和 GitHub REST client
 broker/                  Cloudflare OAuth Broker 与 Durable Object flow store
 cordis.patch.yml         Harness web profile bundle patch

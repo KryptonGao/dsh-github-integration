@@ -84,7 +84,7 @@ describe('GitService integration', () => {
       await writeFile(join(worktree, 'README.md'), 'initial\n')
       await git(worktree, 'add', '--', 'README.md')
       await git(worktree, 'commit', '-m', 'initial')
-      await git(worktree, 'remote', 'add', 'origin', bare)
+      await git(worktree, 'remote', 'add', 'upstream', bare)
 
       const ctx = {
         get(name: string) {

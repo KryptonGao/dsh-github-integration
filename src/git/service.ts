@@ -151,7 +151,7 @@ export class GitService {
 
   async detectRepository(workspaceId: string, signal?: AbortSignal) {
     const cwd = workspacePath(this.ctx, workspaceId)
-    const remoteUrl = (await requireGit(this.ctx, cwd, ['remote', 'get-url', 'origin'], signal)).trim()
+    const remoteUrl = (await requireGit(this.ctx, cwd, ['remote', 'get-url', 'upstream'], signal)).trim()
     return parseGitHubRemote(remoteUrl)
   }
 
@@ -213,6 +213,6 @@ export class GitService {
 
   async push(workspaceId: string, branch: string, signal?: AbortSignal): Promise<void> {
     const cwd = workspacePath(this.ctx, workspaceId)
-    await requireGit(this.ctx, cwd, ['push', '--set-upstream', 'origin', safeBranchName(branch)], signal)
+    await requireGit(this.ctx, cwd, ['push', '--set-upstream', 'upstream', safeBranchName(branch)], signal)
   }
 }

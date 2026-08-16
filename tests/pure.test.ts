@@ -7,24 +7,24 @@ import { redactTokenMessage } from '../src/github/auth.ts'
 import type { ToolExecution } from '@deepseek-ai/dsh-tools'
 
 describe('GitHub remote parsing', () => {
-  it('accepts public HTTPS and SSH origin URLs', () => {
+  it('accepts public HTTPS and SSH upstream URLs', () => {
     expect(parseGitHubRemote('https://github.com/acme/widget.git')).toMatchObject({
-      owner: 'acme', repository: 'widget', remoteName: 'origin', authMode: 'user',
+      owner: 'acme', repository: 'widget', remoteName: 'upstream', authMode: 'user',
     })
     expect(parseGitHubRemote('git@github.com:acme/widget')).toMatchObject({ owner: 'acme', repository: 'widget' })
   })
 
-  it('rejects unsupported remotes and non-origin names', () => {
+  it('rejects unsupported remotes and non-upstream names', () => {
     expect(parseGitHubRemote('https://gitlab.com/acme/widget')).toBeNull()
     expect(parseGitHubRemote('https://github.com/acme/widget?token=secret')).toBeNull()
-    expect(parseGitHubRemote('git@github.com:acme/widget', 'upstream')).toBeNull()
+    expect(parseGitHubRemote('git@github.com:acme/widget', 'origin')).toBeNull()
   })
 })
 
 describe('Git status and branch safety', () => {
   it('parses porcelain v1 -z entries and rename pairs', () => {
-    const status = parseGitStatus('## feature...origin/feature [ahead 2, behind 1]\0 M src/a.ts\0R  src/new.ts\0src/old.ts\0?? notes.md\0')
-    expect(status).toMatchObject({ branch: 'feature', upstream: 'origin/feature', ahead: 2, behind: 1, clean: false })
+    const status = parseGitStatus('## feature...upstream/feature [ahead 2, behind 1]\0 M src/a.ts\0R  src/new.ts\0src/old.ts\0?? notes.md\0')
+    expect(status).toMatchObject({ branch: 'feature', upstream: 'upstream/feature', ahead: 2, behind: 1, clean: false })
     expect(status.entries).toEqual([
       { path: 'src/a.ts', index: ' ', worktree: 'M', status: 'modified' },
       { path: 'src/new.ts', oldPath: 'src/old.ts', index: 'R', worktree: ' ', status: 'renamed' },

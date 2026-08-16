@@ -7,7 +7,7 @@ const binding: GitHubRepositoryBinding = {
   provider: 'github',
   owner: 'acme',
   repository: 'widget',
-  remoteName: 'origin',
+  remoteName: 'upstream',
   remoteUrl: 'https://github.com/acme/widget.git',
   authMode: 'user',
 }

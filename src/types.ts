@@ -8,7 +8,7 @@ export interface GitHubRepositoryBinding {
   provider: 'github'
   owner: string
   repository: string
-  remoteName: 'origin'
+  remoteName: 'upstream'
   remoteUrl: string
   authMode: GitHubAuthMode
   installationId?: number

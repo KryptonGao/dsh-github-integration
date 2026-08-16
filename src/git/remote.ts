@@ -2,9 +2,9 @@ import type { GitHubRepositoryBinding } from '../types.ts'
 
 const OWNER_REPOSITORY = /^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?$/
 
-/** Parse only the two public GitHub origin forms supported by the MVP. */
-export function parseGitHubRemote(url: string, remoteName: string = 'origin'): GitHubRepositoryBinding | null {
-  if (remoteName !== 'origin') return null
+/** Parse only the two public GitHub upstream forms supported by the MVP. */
+export function parseGitHubRemote(url: string, remoteName: string = 'upstream'): GitHubRepositoryBinding | null {
+  if (remoteName !== 'upstream') return null
   const normalized = url.trim()
   let path: string | undefined
   if (normalized.startsWith('https://github.com/')) {
@@ -25,7 +25,7 @@ export function parseGitHubRemote(url: string, remoteName: string = 'origin'): G
     provider: 'github',
     owner,
     repository,
-    remoteName: 'origin',
+    remoteName: 'upstream',
     remoteUrl: normalized,
     authMode: 'user',
   }

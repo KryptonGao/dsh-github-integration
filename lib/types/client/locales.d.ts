@@ -17,7 +17,7 @@ export declare const zh: {
     readonly 'workspace.select.title': "选择 Workspace";
     readonly 'workspace.select.text': "请先选择或创建 Workspace。";
     readonly 'repository.none.title': "没有 GitHub 仓库";
-    readonly 'repository.none.text': "将 Workspace origin 设置为 GitHub HTTPS 或 SSH 远程仓库后即可使用此面板。";
+    readonly 'repository.none.text': "将 Workspace upstream 设置为 GitHub HTTPS 或 SSH 远程仓库后即可使用此面板。";
     readonly 'repository.bind.text': "请先将此 Workspace 绑定到 GitHub 仓库。";
     readonly 'summary.branch': "分支";
     readonly 'summary.changes': "更改";

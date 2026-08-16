@@ -164,7 +164,7 @@ export class GitHubGateway extends TypertRemoteService {
 
   private async requireBinding(workspaceId: string, signal: AbortSignal): Promise<GitHubRepositoryBinding> {
     const binding = await this.bindingFor(workspaceId, signal)
-    if (binding === null) throw new Error('Workspace is not bound to a supported GitHub origin')
+    if (binding === null) throw new Error('Workspace is not bound to a supported GitHub upstream')
     return binding
   }
 
@@ -407,7 +407,7 @@ export class GitHubGateway extends TypertRemoteService {
     const name = requireText(input.repository?.name, 'repository name', 256)
     const binding = await this.requireBinding(workspaceId, signal)
     if (binding.owner !== owner || binding.repository !== name) {
-      throw new Error('Session link repository does not match Workspace origin')
+      throw new Error('Session link repository does not match Workspace upstream')
     }
     const issueNumber = input.issueNumber === undefined ? undefined : requirePositiveInteger(input.issueNumber, 'issue number')
     const pullRequestNumber = input.pullRequestNumber === undefined ? undefined : requirePositiveInteger(input.pullRequestNumber, 'pull request number')
