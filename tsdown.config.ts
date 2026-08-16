@@ -22,12 +22,14 @@ export default defineConfig(({ env }) => {
       ? ['react', 'react/jsx-runtime', 'react-dom', '@deepseek-ai/cordis']
       : [/^@deepseek-ai\//],
     ...(client ? {
+      deps: {
+        alwaysBundle: ['zod'],
+      },
       outputOptions: {
         entryFileNames: 'client.js',
-        banner: 'window.__ModuleLoader__.load({ id: "dsh-github-integration", factory: (require) => {',
+        banner: 'window.__ModuleLoader__.load({ id: "dsh-github-integration", factory: (require) => { const module = { exports: {} }; const exports = module.exports;',
         footer: 'return module.exports; } });',
       },
-      intro: 'var module = { exports: {} }; var exports = module.exports;',
     } : {
       plugins: [typertPlugin({ mode: 'package', faces: ['host'] })],
     }),

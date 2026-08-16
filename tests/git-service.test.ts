@@ -39,6 +39,37 @@ async function git(cwd: string, ...args: string[]): Promise<void> {
 }
 
 describe('GitService integration', () => {
+  it('accepts untracked directories reported with a trailing slash', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'dsh-github-integration-'))
+    const worktree = join(root, 'worktree')
+    try {
+      await mkdir(worktree)
+      await git(worktree, 'init', '-b', 'main')
+      await git(worktree, 'config', 'user.email', 'test@example.com')
+      await git(worktree, 'config', 'user.name', 'Test User')
+      await writeFile(join(worktree, 'README.md'), 'initial\n')
+      await git(worktree, 'add', '--', 'README.md')
+      await git(worktree, 'commit', '-m', 'initial')
+      await mkdir(join(worktree, '.opencode'))
+      await writeFile(join(worktree, '.opencode', 'config.json'), '{"enabled":true}\n')
+
+      const ctx = {
+        get(name: string) {
+          if (name === 'subprocess') return fakeSubprocess()
+          if (name === 'workspaceRegistry') return { get: () => ({ path: worktree }) }
+          return undefined
+        },
+      }
+      const service = new GitService(ctx as never)
+
+      const status = await service.status('workspace-1')
+      expect(status.entries).toContainEqual({ path: '.opencode/', index: '?', worktree: '?', status: 'untracked' })
+      await expect(service.diff('workspace-1')).resolves.toMatchObject({ truncated: false })
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
+
   it('stages, commits, and pushes through the workspace-bound service', async () => {
     const root = await mkdtemp(join(tmpdir(), 'dsh-github-integration-'))
     const bare = join(root, 'remote.git')

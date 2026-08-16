@@ -7,6 +7,8 @@ import type {
   CreateBranchInput,
   CreatePullRequestInput,
   GitHubAppSettings,
+  GitHubBranch,
+  GitHubAuthState,
   GitHubCapabilities,
   GitHubIssueDetail,
   GitHubPullRequestDetail,
@@ -15,6 +17,7 @@ import type {
   GitHubSessionLink,
   WorkspaceGitHubState,
   ListIssuesInput,
+  ListBranchesInput,
   ListPullRequestsInput,
   PullRequestInput,
   IssueInput,
@@ -42,10 +45,11 @@ export const GITHUB_SETTINGS_NAMESPACE = settingsNamespace('github-integration')
 export const GitHubSettingsSchema: z<GitHubAppSettings> = z.object({
   appId: z.string().default(''),
   clientId: z.string().default(''),
+  appSlug: z.string().default(''),
+  redirectUri: z.string().default(''),
+  brokerUrl: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.brokerUrl ?? ''),
   clientSecretRef: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.clientSecretRef),
   privateKeyRef: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.privateKeyRef),
-  userAccessTokenRef: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.userAccessTokenRef),
-  userRefreshTokenRef: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.userRefreshTokenRef),
 })
 
 interface ResolvedBinding {
@@ -115,14 +119,14 @@ function requireFiles(value: unknown): string[] {
 /** Host-side GitHub integration Gateway. */
 export class GitHubGateway extends TypertRemoteService {
   private readonly git: GitService
+  private readonly state = new GitHubStateStore()
   private readonly auth: GitHubAuthManager
   private readonly github: GitHubApiClient
-  private readonly state = new GitHubStateStore()
 
   constructor(ctx: Context) {
     super(ctx, 'github')
     this.git = new GitService(ctx)
-    this.auth = new GitHubAuthManager(ctx)
+    this.auth = new GitHubAuthManager(ctx, this.state)
     this.github = new GitHubApiClient(this.auth)
     ctx.inject(['tools'], (toolsCtx) => {
       toolsCtx.tools.guard(gitSafetyGuard)
@@ -175,6 +179,24 @@ export class GitHubGateway extends TypertRemoteService {
     const available = capabilities(resolved.repository, resolved.binding.authMode)[capability]
     if (available !== true) throw new Error(`GitHub capability denied: ${capability}`)
     return resolved
+  }
+
+  @Remote
+  async beginUserAuthorization(_input: Record<string, never>, signal: AbortSignal): Promise<{ authorizationUrl: string }> {
+    signal.throwIfAborted()
+    return this.auth.beginUserAuthorization()
+  }
+
+  @Remote
+  async getAuthState(_input: Record<string, never>, signal: AbortSignal): Promise<GitHubAuthState> {
+    signal.throwIfAborted()
+    return this.auth.authState()
+  }
+
+  @Remote
+  async disconnect(_input: Record<string, never>, signal: AbortSignal): Promise<{ disconnected: true; remoteRevoked: boolean }> {
+    signal.throwIfAborted()
+    return this.auth.disconnect()
   }
 
   @Remote
@@ -286,6 +308,13 @@ export class GitHubGateway extends TypertRemoteService {
     const workspaceId = requireWorkspaceId(input.workspaceId)
     const { binding } = await this.requireCapability(workspaceId, 'canReadPullRequests', signal)
     return this.github.pullRequests(binding, input.state ?? 'open', input.page ?? 1, input.perPage ?? 30, signal)
+  }
+
+  @Remote
+  async listBranches(input: ListBranchesInput, signal: AbortSignal): Promise<GitHubBranch[]> {
+    const workspaceId = requireWorkspaceId(input.workspaceId)
+    const { binding } = await this.requireCapability(workspaceId, 'canReadRepository', signal)
+    return this.github.branches(binding, input.page ?? 1, input.perPage ?? 100, signal)
   }
 
   @Remote

@@ -11,6 +11,12 @@ export interface SettingsScope<T> {
   unset(field: string): Promise<void>
   dispose(): Promise<void>
 }
+
+export interface LocaleService {
+  register(namespace: string, dictionaries: Record<string, Record<string, string>>): () => void
+  bind(namespace: string): (key: string, params?: Record<string, unknown>) => string
+}
+
 export interface ClientContext {
   remote: any
   sessions: {
@@ -30,6 +36,8 @@ export interface ClientContext {
   settingsScope: {
     bind<T>(spec: { namespace: string }): SettingsScope<T>
   }
+  locale: LocaleService
+  effect<T>(factory: () => T, label?: string): T
   slots: {
     inject(name: string, callback: () => unknown): unknown
     register(options: { inject?: (value: any) => any; [key: string]: any }, component: any): unknown

@@ -1,14 +1,33 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { homedir } from 'node:os'
-import type { GitHubAuthMode, GitHubSessionLink } from '../types.ts'
+import type {
+  GitHubAuthMode,
+  GitHubAuthStatus,
+  GitHubInstallationAccess,
+  GitHubSessionLink,
+  GitHubUserProfile,
+} from '../types.ts'
+
+export interface StoredAuthState {
+  status: GitHubAuthStatus
+  installations: GitHubInstallationAccess[]
+  user?: GitHubUserProfile
+  expiresAt?: number
+  refreshTokenExpiresAt?: number
+}
 
 interface StoredState {
   bindings: Record<string, { authMode: GitHubAuthMode; installationId?: number }>
   sessions: Record<string, GitHubSessionLink>
+  auth: StoredAuthState
 }
 
-const EMPTY_STATE: StoredState = { bindings: {}, sessions: {} }
+const EMPTY_STATE: StoredState = {
+  bindings: {},
+  sessions: {},
+  auth: { status: 'disconnected', installations: [] },
+}
 
 function storagePath(): string {
   const root = process.env.DSH_HOME?.trim() || join(homedir(), '.dsh')
@@ -30,6 +49,13 @@ export class GitHubStateStore {
       this.state = {
         bindings: parsed.bindings ?? {},
         sessions: parsed.sessions ?? {},
+        auth: {
+          status: parsed.auth?.status ?? 'disconnected',
+          installations: parsed.auth?.installations ?? [],
+          ...(parsed.auth?.user === undefined ? {} : { user: parsed.auth.user }),
+          ...(parsed.auth?.expiresAt === undefined ? {} : { expiresAt: parsed.auth.expiresAt }),
+          ...(parsed.auth?.refreshTokenExpiresAt === undefined ? {} : { refreshTokenExpiresAt: parsed.auth.refreshTokenExpiresAt }),
+        },
       }
     } catch (error: unknown) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
@@ -51,6 +77,20 @@ export class GitHubStateStore {
 
   async setSession(value: GitHubSessionLink): Promise<void> {
     this.state.sessions[value.sessionId] = value
+    await this.persist()
+  }
+
+  auth(): StoredAuthState {
+    return structuredClone(this.state.auth)
+  }
+
+  async setAuth(value: StoredAuthState): Promise<void> {
+    this.state.auth = structuredClone(value)
+    await this.persist()
+  }
+
+  async clearAuth(): Promise<void> {
+    this.state.auth = { status: 'disconnected', installations: [] }
     await this.persist()
   }
 

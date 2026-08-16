@@ -85,6 +85,11 @@ export interface GitHubPullRequestFile {
   previousFilename?: string
 }
 
+export interface GitHubBranch {
+  name: string
+  protected: boolean
+}
+
 export interface GitHubPullRequestDetail extends GitHubPullRequest {
   comments: GitHubComment[]
 }
@@ -158,6 +163,12 @@ export interface ListPullRequestsInput {
   perPage?: number
 }
 
+export interface ListBranchesInput {
+  workspaceId: string
+  page?: number
+  perPage?: number
+}
+
 export interface PullRequestInput {
   workspaceId: string
   number: number
@@ -203,10 +214,37 @@ export interface GitHubSessionLink {
 export interface GitHubAppSettings {
   appId: string
   clientId: string
+  appSlug: string
+  redirectUri: string
+  /** Public OAuth Broker base URL. Empty keeps the self-hosted Host flow. */
+  brokerUrl: string
   clientSecretRef: string
   privateKeyRef: string
-  userAccessTokenRef: string
-  userRefreshTokenRef: string
+}
+
+export type GitHubAuthStatus = 'connected' | 'disconnected' | 'reauthorization_required' | 'developer_configuration_required'
+
+export interface GitHubUserProfile {
+  id: number
+  login: string
+  avatarUrl: string
+  htmlUrl: string
+}
+
+export interface GitHubInstallationAccess {
+  id: number
+  accountLogin: string
+  accountAvatarUrl?: string
+  htmlUrl: string
+  repositorySelection: 'all' | 'selected' | 'unknown'
+}
+
+export interface GitHubAuthState {
+  status: GitHubAuthStatus
+  user?: GitHubUserProfile
+  installations: GitHubInstallationAccess[]
+  manageRepositoryAccessUrl?: string
+  message?: string
 }
 
 export interface GitHubRemoteErrorShape {
@@ -217,13 +255,18 @@ export interface GitHubRemoteErrorShape {
 }
 
 export const DEFAULT_GITHUB_APP_SETTINGS: GitHubAppSettings = {
-  appId: '',
-  clientId: '',
+  appId: '4606084',
+  clientId: 'Iv23li7bejiYTKAgKXQ2',
+  appSlug: 'dsh-github-integration',
+  redirectUri: 'https://dshgithubintegration.chenkai.space/github/oauth/callback',
+  brokerUrl: 'https://dshgithubintegration.chenkai.space',
   clientSecretRef: 'GITHUB_APP_CLIENT_SECRET',
   privateKeyRef: 'GITHUB_APP_PRIVATE_KEY',
-  userAccessTokenRef: 'GITHUB_APP_USER_TOKEN',
-  userRefreshTokenRef: 'GITHUB_APP_USER_REFRESH_TOKEN',
 }
+
+export const GITHUB_USER_ACCESS_TOKEN_REF = 'GITHUB_APP_USER_TOKEN'
+export const GITHUB_USER_REFRESH_TOKEN_REF = 'GITHUB_APP_USER_REFRESH_TOKEN'
+export const GITHUB_OAUTH_CALLBACK_PATH = '/github/oauth/callback'
 
 export const MAX_ISSUE_BODY_BYTES = 32_000
 export const MAX_COMMENT_BYTES = 8_000

@@ -1,0 +1,21 @@
+name = "dshgithubintegration-oauth-broker"
+main = "src/index.ts"
+compatibility_date = "2026-08-16"
+
+[vars]
+GITHUB_APP_ID = "4606084"
+GITHUB_APP_CLIENT_ID = "Iv23li7bejiYTKAgKXQ2"
+GITHUB_APP_SLUG = "dsh-github-integration"
+GITHUB_APP_CALLBACK_URL = "https://dshgithubintegration.chenkai.space/github/oauth/callback"
+
+[[durable_objects.bindings]]
+name = "FLOW_STORE"
+class_name = "OAuthFlowStore"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["OAuthFlowStore"]
+
+[[routes]]
+pattern = "dshgithubintegration.chenkai.space"
+custom_domain = true

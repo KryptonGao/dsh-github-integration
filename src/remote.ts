@@ -7,6 +7,8 @@ import type {
   CreateBranchInput,
   CreatePullRequestInput,
   GitDiff,
+  GitHubBranch,
+  GitHubAuthState,
   GitHubIssueDetail,
   GitHubPullRequestDetail,
   GitHubPullRequestFile,
@@ -16,6 +18,7 @@ import type {
   GitStatus,
   IssueInput,
   ListIssuesInput,
+  ListBranchesInput,
   ListPullRequestsInput,
   PullRequestInput,
   PushInput,
@@ -27,12 +30,16 @@ const JSON_VALUE = z.json()
 const JSON_RESULT = z.union([z.json(), z.undefined()])
 
 export interface GitHubRemoteNamespace {
+  beginUserAuthorization(input: Record<string, never>, signal?: AbortSignal): Promise<RemoteResult<{ authorizationUrl: string }>>
+  getAuthState(input: Record<string, never>, signal?: AbortSignal): Promise<RemoteResult<GitHubAuthState>>
+  disconnect(input: Record<string, never>, signal?: AbortSignal): Promise<RemoteResult<{ disconnected: true; remoteRevoked: boolean }>>
   getWorkspaceState(input: { workspaceId: string }, signal?: AbortSignal): Promise<RemoteResult<WorkspaceGitHubState>>
   setWorkspaceAuth(input: { workspaceId: string; authMode: 'user' | 'installation'; installationId?: number }, signal?: AbortSignal): Promise<RemoteResult<GitHubRepositoryBinding | null>>
   listIssues(input: ListIssuesInput, signal?: AbortSignal): Promise<RemoteResult<import('./types.ts').GitHubIssue[]>>
   getIssue(input: IssueInput, signal?: AbortSignal): Promise<RemoteResult<GitHubIssueDetail>>
   getIssueComments(input: IssueInput, signal?: AbortSignal): Promise<RemoteResult<import('./types.ts').GitHubComment[]>>
   listPullRequests(input: ListPullRequestsInput, signal?: AbortSignal): Promise<RemoteResult<import('./types.ts').GitHubPullRequest[]>>
+  listBranches(input: ListBranchesInput, signal?: AbortSignal): Promise<RemoteResult<GitHubBranch[]>>
   getPullRequest(input: PullRequestInput, signal?: AbortSignal): Promise<RemoteResult<GitHubPullRequestDetail>>
   getPullRequestFiles(input: PullRequestInput, signal?: AbortSignal): Promise<RemoteResult<GitHubPullRequestFile[]>>
   getGitStatus(input: { workspaceId: string }, signal?: AbortSignal): Promise<RemoteResult<GitStatus>>
@@ -48,12 +55,16 @@ export interface GitHubRemoteNamespace {
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteMap {
+    'github/beginUserAuthorization': GitHubRemoteNamespace['beginUserAuthorization']
+    'github/getAuthState': GitHubRemoteNamespace['getAuthState']
+    'github/disconnect': GitHubRemoteNamespace['disconnect']
     'github/getWorkspaceState': GitHubRemoteNamespace['getWorkspaceState']
     'github/setWorkspaceAuth': GitHubRemoteNamespace['setWorkspaceAuth']
     'github/listIssues': GitHubRemoteNamespace['listIssues']
     'github/getIssue': GitHubRemoteNamespace['getIssue']
     'github/getIssueComments': GitHubRemoteNamespace['getIssueComments']
     'github/listPullRequests': GitHubRemoteNamespace['listPullRequests']
+    'github/listBranches': GitHubRemoteNamespace['listBranches']
     'github/getPullRequest': GitHubRemoteNamespace['getPullRequest']
     'github/getPullRequestFiles': GitHubRemoteNamespace['getPullRequestFiles']
     'github/getGitStatus': GitHubRemoteNamespace['getGitStatus']
@@ -92,12 +103,16 @@ function descriptor(method: string, hasSignal = true) {
 export const TYPERT_REMOTE: TypertRemoteContribution = {
   package: 'dsh-github-integration',
   descriptors: [
+    descriptor('beginUserAuthorization'),
+    descriptor('getAuthState'),
+    descriptor('disconnect'),
     descriptor('getWorkspaceState'),
     descriptor('setWorkspaceAuth'),
     descriptor('listIssues'),
     descriptor('getIssue'),
     descriptor('getIssueComments'),
     descriptor('listPullRequests'),
+    descriptor('listBranches'),
     descriptor('getPullRequest'),
     descriptor('getPullRequestFiles'),
     descriptor('getGitStatus'),

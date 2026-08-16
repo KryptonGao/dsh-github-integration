@@ -15,8 +15,8 @@ const binding: GitHubRepositoryBinding = {
 function authWithToken(): GitHubAuthManager {
   const ctx = {
     get(name: string) {
-      if (name === 'settings') return { get: () => ({ userAccessTokenRef: 'TOKEN' }) }
-      if (name === 'credentials') return { resolve: async () => ({ value: 'ghp_test_token' }) }
+      if (name === 'settings') return { get: () => ({}) }
+      if (name === 'credentials') return { resolve: async () => ({ value: 'ghp_test_token', source: 'test' }) }
       return undefined
     },
   }
@@ -45,6 +45,24 @@ describe('GitHub API gateway boundaries', () => {
     try {
       await expect(new GitHubApiClient(authWithToken()).repository(binding)).rejects.toThrow('GitHub permission denied or rate limited')
       await expect(new GitHubApiClient(authWithToken()).repository(binding)).rejects.not.toThrow('ghp_test_token')
+    } finally {
+      fetchMock.mockRestore()
+    }
+  })
+
+  it('lists repository branches for the pull-request base selector', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify([
+      { name: 'main', protected: true },
+      { name: 'feature/preview', protected: false },
+    ]), { status: 200, headers: { 'content-type': 'application/json' } }))
+    try {
+      const branches = await new GitHubApiClient(authWithToken()).branches(binding)
+      expect(branches).toEqual([
+        { name: 'main', protected: true },
+        { name: 'feature/preview', protected: false },
+      ])
+      expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/repos/acme/widget/branches')
+      expect(String(fetchMock.mock.calls[0]?.[0])).toContain('per_page=100')
     } finally {
       fetchMock.mockRestore()
     }

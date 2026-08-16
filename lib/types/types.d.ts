@@ -76,6 +76,10 @@ export interface GitHubPullRequestFile {
     patch?: string;
     previousFilename?: string;
 }
+export interface GitHubBranch {
+    name: string;
+    protected: boolean;
+}
 export interface GitHubPullRequestDetail extends GitHubPullRequest {
     comments: GitHubComment[];
 }
@@ -140,6 +144,11 @@ export interface ListPullRequestsInput {
     page?: number;
     perPage?: number;
 }
+export interface ListBranchesInput {
+    workspaceId: string;
+    page?: number;
+    perPage?: number;
+}
 export interface PullRequestInput {
     workspaceId: string;
     number: number;
@@ -181,10 +190,33 @@ export interface GitHubSessionLink {
 export interface GitHubAppSettings {
     appId: string;
     clientId: string;
+    appSlug: string;
+    redirectUri: string;
+    /** Public OAuth Broker base URL. Empty keeps the self-hosted Host flow. */
+    brokerUrl: string;
     clientSecretRef: string;
     privateKeyRef: string;
-    userAccessTokenRef: string;
-    userRefreshTokenRef: string;
+}
+export type GitHubAuthStatus = 'connected' | 'disconnected' | 'reauthorization_required' | 'developer_configuration_required';
+export interface GitHubUserProfile {
+    id: number;
+    login: string;
+    avatarUrl: string;
+    htmlUrl: string;
+}
+export interface GitHubInstallationAccess {
+    id: number;
+    accountLogin: string;
+    accountAvatarUrl?: string;
+    htmlUrl: string;
+    repositorySelection: 'all' | 'selected' | 'unknown';
+}
+export interface GitHubAuthState {
+    status: GitHubAuthStatus;
+    user?: GitHubUserProfile;
+    installations: GitHubInstallationAccess[];
+    manageRepositoryAccessUrl?: string;
+    message?: string;
 }
 export interface GitHubRemoteErrorShape {
     status: number;
@@ -193,6 +225,9 @@ export interface GitHubRemoteErrorShape {
     rateLimitResetAt?: string;
 }
 export declare const DEFAULT_GITHUB_APP_SETTINGS: GitHubAppSettings;
+export declare const GITHUB_USER_ACCESS_TOKEN_REF = "GITHUB_APP_USER_TOKEN";
+export declare const GITHUB_USER_REFRESH_TOKEN_REF = "GITHUB_APP_USER_REFRESH_TOKEN";
+export declare const GITHUB_OAUTH_CALLBACK_PATH = "/github/oauth/callback";
 export declare const MAX_ISSUE_BODY_BYTES = 32000;
 export declare const MAX_COMMENT_BYTES = 8000;
 export declare const MAX_ISSUE_COMMENTS = 20;
