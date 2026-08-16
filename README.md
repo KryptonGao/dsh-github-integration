@@ -138,4 +138,4 @@ tests/                   Git、认证、GitHub API 和 Client 行为测试
 
 ## 许可证
 
-[MIT](./LICENSE)
+[Apache-2.0 license](./LICENSE)
