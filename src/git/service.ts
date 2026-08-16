@@ -75,10 +75,11 @@ function workspacePath(ctx: Context, workspaceId: string): string {
 }
 
 function assertRelativePath(path: string): void {
-  if (!path || path.includes('\0') || path.startsWith('/') || path.startsWith('\\')) {
+  const normalized = path.replaceAll('\\', '/').replace(/\/+$/, '')
+  if (!normalized || normalized.includes('\0') || normalized.startsWith('/')) {
     throw new Error(`unsafe repository path: ${path}`)
   }
-  const segments = path.replaceAll('\\', '/').split('/')
+  const segments = normalized.split('/')
   if (segments.some(segment => segment === '..' || segment === '')) {
     throw new Error(`unsafe repository path: ${path}`)
   }

@@ -1,6 +1,14 @@
 import type { RemoteResult, TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol';
-import type { CommitInput, CreateBranchInput, CreatePullRequestInput, GitDiff, GitHubIssueDetail, GitHubPullRequestDetail, GitHubPullRequestFile, GitHubRepositoryBinding, GitHubSessionLink, WorkspaceGitHubState, GitStatus, IssueInput, ListIssuesInput, ListPullRequestsInput, PullRequestInput, PushInput, StageInput } from './types.ts';
+import type { CommitInput, CreateBranchInput, CreatePullRequestInput, GitDiff, GitHubBranch, GitHubAuthState, GitHubIssueDetail, GitHubPullRequestDetail, GitHubPullRequestFile, GitHubRepositoryBinding, GitHubSessionLink, WorkspaceGitHubState, GitStatus, IssueInput, ListIssuesInput, ListBranchesInput, ListPullRequestsInput, PullRequestInput, PushInput, StageInput } from './types.ts';
 export interface GitHubRemoteNamespace {
+    beginUserAuthorization(input: Record<string, never>, signal?: AbortSignal): Promise<RemoteResult<{
+        authorizationUrl: string;
+    }>>;
+    getAuthState(input: Record<string, never>, signal?: AbortSignal): Promise<RemoteResult<GitHubAuthState>>;
+    disconnect(input: Record<string, never>, signal?: AbortSignal): Promise<RemoteResult<{
+        disconnected: true;
+        remoteRevoked: boolean;
+    }>>;
     getWorkspaceState(input: {
         workspaceId: string;
     }, signal?: AbortSignal): Promise<RemoteResult<WorkspaceGitHubState>>;
@@ -13,6 +21,7 @@ export interface GitHubRemoteNamespace {
     getIssue(input: IssueInput, signal?: AbortSignal): Promise<RemoteResult<GitHubIssueDetail>>;
     getIssueComments(input: IssueInput, signal?: AbortSignal): Promise<RemoteResult<import('./types.ts').GitHubComment[]>>;
     listPullRequests(input: ListPullRequestsInput, signal?: AbortSignal): Promise<RemoteResult<import('./types.ts').GitHubPullRequest[]>>;
+    listBranches(input: ListBranchesInput, signal?: AbortSignal): Promise<RemoteResult<GitHubBranch[]>>;
     getPullRequest(input: PullRequestInput, signal?: AbortSignal): Promise<RemoteResult<GitHubPullRequestDetail>>;
     getPullRequestFiles(input: PullRequestInput, signal?: AbortSignal): Promise<RemoteResult<GitHubPullRequestFile[]>>;
     getGitStatus(input: {
@@ -35,12 +44,16 @@ export interface GitHubRemoteNamespace {
 }
 declare module '@deepseek-ai/dsh-typert-protocol' {
     interface TypertRemoteMap {
+        'github/beginUserAuthorization': GitHubRemoteNamespace['beginUserAuthorization'];
+        'github/getAuthState': GitHubRemoteNamespace['getAuthState'];
+        'github/disconnect': GitHubRemoteNamespace['disconnect'];
         'github/getWorkspaceState': GitHubRemoteNamespace['getWorkspaceState'];
         'github/setWorkspaceAuth': GitHubRemoteNamespace['setWorkspaceAuth'];
         'github/listIssues': GitHubRemoteNamespace['listIssues'];
         'github/getIssue': GitHubRemoteNamespace['getIssue'];
         'github/getIssueComments': GitHubRemoteNamespace['getIssueComments'];
         'github/listPullRequests': GitHubRemoteNamespace['listPullRequests'];
+        'github/listBranches': GitHubRemoteNamespace['listBranches'];
         'github/getPullRequest': GitHubRemoteNamespace['getPullRequest'];
         'github/getPullRequestFiles': GitHubRemoteNamespace['getPullRequestFiles'];
         'github/getGitStatus': GitHubRemoteNamespace['getGitStatus'];

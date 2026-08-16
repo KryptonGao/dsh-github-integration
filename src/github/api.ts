@@ -1,5 +1,6 @@
 import type {
   GitHubComment,
+  GitHubBranch,
   GitHubIssue,
   GitHubIssueDetail,
   GitHubIssueState,
@@ -109,6 +110,14 @@ function parseFile(value: unknown): GitHubPullRequestFile {
   }
 }
 
+function parseBranch(value: unknown): GitHubBranch {
+  const item = value as Record<string, unknown>
+  return {
+    name: stringValue(item.name),
+    protected: item.protected === true,
+  }
+}
+
 /** Minimal GitHub REST client. Tokens stay entirely inside this Host class. */
 export class GitHubApiClient {
   constructor(
@@ -121,21 +130,17 @@ export class GitHubApiClient {
     init: RequestInit = {},
     signal?: AbortSignal,
   ): Promise<T> {
-    const token = await this.auth.token(binding.authMode, binding.installationId)
+    let token = await this.auth.token(binding.authMode, binding.installationId)
     if (token === undefined) throw new Error('GitHub authentication is not configured')
-    const headers = new Headers({
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      Authorization: `Bearer ${token.token}`,
-    })
-    if (init.headers !== undefined) {
-      new Headers(init.headers).forEach((value, key) => headers.set(key, value))
+    let response = await this.fetchWithToken(path, init, signal, token.token)
+    if (response.status === 401 && token.source === 'user') {
+      this.auth.invalidateUserToken()
+      const refreshed = await this.auth.token('user')
+      if (refreshed !== undefined && refreshed.token !== token.token) {
+        token = refreshed
+        response = await this.fetchWithToken(path, init, signal, token.token)
+      }
     }
-    const response = await fetch(`https://api.github.com${path}`, {
-      ...init,
-      ...(signal === undefined ? {} : { signal }),
-      headers,
-    })
     if (!response.ok) {
       let message = `GitHub API request failed: HTTP ${String(response.status)}`
       try {
@@ -151,6 +156,22 @@ export class GitHubApiClient {
     }
     if (response.status === 204) return undefined as T
     return await response.json() as T
+  }
+
+  private async fetchWithToken(path: string, init: RequestInit, signal: AbortSignal | undefined, token: string): Promise<Response> {
+    const headers = new Headers({
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      Authorization: `Bearer ${token}`,
+    })
+    if (init.headers !== undefined) {
+      new Headers(init.headers).forEach((value, key) => headers.set(key, value))
+    }
+    return fetch(`https://api.github.com${path}`, {
+      ...init,
+      ...(signal === undefined ? {} : { signal }),
+      headers,
+    })
   }
 
   async repository(binding: GitHubRepositoryBinding, signal?: AbortSignal): Promise<RepositoryView> {
@@ -195,6 +216,11 @@ export class GitHubApiClient {
   async pullRequests(binding: GitHubRepositoryBinding, state: GitHubPullRequestState = 'open', page = 1, perPage = 30, signal?: AbortSignal): Promise<GitHubPullRequest[]> {
     const response = await this.request<unknown[]>(binding, `/repos/${encodePath(binding.owner)}/${encodePath(binding.repository)}/pulls${query({ state, page: clampPositiveInt(page, 1, 100), per_page: clampPositiveInt(perPage, 30, 100) })}`, {}, signal)
     return response.map(parsePullRequest)
+  }
+
+  async branches(binding: GitHubRepositoryBinding, page = 1, perPage = 100, signal?: AbortSignal): Promise<GitHubBranch[]> {
+    const response = await this.request<unknown[]>(binding, `/repos/${encodePath(binding.owner)}/${encodePath(binding.repository)}/branches${query({ page: clampPositiveInt(page, 1, 100), per_page: clampPositiveInt(perPage, 100, 100) })}`, {}, signal)
+    return response.map(parseBranch).filter(branch => branch.name.length > 0)
   }
 
   async pullRequest(binding: GitHubRepositoryBinding, number: number, signal?: AbortSignal): Promise<GitHubPullRequestDetail> {
