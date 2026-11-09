@@ -1,7 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
 import type {
   CommitInput,
   CreateBranchInput,
@@ -40,13 +39,13 @@ export { parseGitHubRemote, safeBranchName, issueBranchName } from './git/remote
 export { parseGitStatus, runGit, GitService } from './git/service.ts'
 export { gitSafetyGuard } from './git/safety.ts'
 
-export const GITHUB_SETTINGS_NAMESPACE = settingsNamespace('github-integration')
+export const GITHUB_SETTINGS_NAMESPACE = 'include:github-integration'
 
 export const GitHubSettingsSchema: z<GitHubAppSettings> = z.object({
-  appId: z.string().default(''),
-  clientId: z.string().default(''),
-  appSlug: z.string().default(''),
-  redirectUri: z.string().default(''),
+  appId: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.appId),
+  clientId: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.clientId),
+  appSlug: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.appSlug),
+  redirectUri: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.redirectUri),
   brokerUrl: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.brokerUrl ?? ''),
   clientSecretRef: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.clientSecretRef),
   privateKeyRef: z.string().default(DEFAULT_GITHUB_APP_SETTINGS.privateKeyRef),
@@ -118,6 +117,7 @@ function requireFiles(value: unknown): string[] {
 
 /** Host-side GitHub integration Gateway. */
 export class GitHubGateway extends TypertRemoteService {
+  static Config = GitHubSettingsSchema
   private readonly git: GitService
   private readonly state = new GitHubStateStore()
   private readonly auth: GitHubAuthManager
@@ -130,11 +130,6 @@ export class GitHubGateway extends TypertRemoteService {
     this.github = new GitHubApiClient(this.auth)
     ctx.inject(['tools'], (toolsCtx) => {
       toolsCtx.tools.guard(gitSafetyGuard)
-    })
-    ctx.inject(['settings'], (settingsCtx) => {
-      settingsCtx.settings.register(GITHUB_SETTINGS_NAMESPACE, GitHubSettingsSchema, {
-        base: DEFAULT_GITHUB_APP_SETTINGS,
-      })
     })
   }
 

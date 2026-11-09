@@ -42,7 +42,7 @@ describe('Client slot integration', () => {
         bind: () => translate,
       },
       remote: { $mount: async () => async () => undefined },
-      settingsScope: { bind: () => scope },
+      configForms: { get: (id: string) => { expect(id).toBe('include:github-integration'); return scope } },
       get: (name: string) => name === 'connection' ? { api: {} } : undefined,
       slots: {
         inject: (_name: string, callback: () => unknown) => { callback() },

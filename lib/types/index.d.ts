@@ -10,6 +10,7 @@ export declare const GITHUB_SETTINGS_NAMESPACE: string;
 export declare const GitHubSettingsSchema: z<GitHubAppSettings>;
 /** Host-side GitHub integration Gateway. */
 export declare class GitHubGateway extends TypertRemoteService {
+    static Config: z<GitHubAppSettings>;
     private readonly git;
     private readonly state;
     private readonly auth;
@@ -62,4 +63,3 @@ export declare class GitHubGateway extends TypertRemoteService {
     }): Promise<GitHubSessionLink | null>;
 }
 export default GitHubGateway;
-//# sourceMappingURL=index.d.ts.map

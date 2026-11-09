@@ -33,8 +33,8 @@ export interface ClientContext {
       getSnapshot(): { items: Array<{ workspaceId: string; sessionIds: string[] }>; recentWorkspaceId?: string }
     }
   }
-  settingsScope: {
-    bind<T>(spec: { namespace: string }): SettingsScope<T>
+  configForms: {
+    get<T>(entryId: string): import('./settings-client.d.ts').ConfigForm<T>
   }
   locale: LocaleService
   effect<T>(factory: () => T, label?: string): T

@@ -1,1 +1,1 @@
-export function settingsNamespace(value: string): string
+export type SettingsNamespace = string

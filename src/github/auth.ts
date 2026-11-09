@@ -121,10 +121,9 @@ async function unsetCredential(ctx: Context, ref: string): Promise<void> {
 }
 
 async function readSettings(ctx: Context): Promise<GitHubAppSettings> {
-  const settings = ctx.get('settings')
-  if (settings === undefined) return { ...DEFAULT_GITHUB_APP_SETTINGS }
-  const scope = settings.get?.('github-integration') as Partial<GitHubAppSettings> | undefined
-  return { ...DEFAULT_GITHUB_APP_SETTINGS, ...(scope ?? {}) }
+  // DSH 0.2.2 exposes settings through the owning Loader entry's Config.
+  const config = ctx.fiber.effectiveConfig as Partial<GitHubAppSettings> | undefined
+  return { ...DEFAULT_GITHUB_APP_SETTINGS, ...(config ?? {}) }
 }
 
 async function githubTokenRequest(url: string, token: string, init: RequestInit = {}): Promise<Response> {
