@@ -93,10 +93,10 @@ function descriptor(method: string, hasSignal = true) {
       name: 'input',
       wire: 'input',
       source: 'json' as const,
-      codec: { mode: 'strict' as const, typeSymbol: 'dsh-github-integration#JsonValue', schema: JSON_VALUE },
+      codec: { mode: 'strict' as const, typeSymbol: 'dsh-github-integration#JsonValue', create: () => JSON_VALUE },
     }],
     ...(hasSignal ? { cancellation: { parameter: 'signal' as const } } : {}),
-    result: { mode: 'strict' as const, typeSymbol: 'dsh-github-integration#JsonResult', schema: JSON_RESULT },
+    result: { mode: 'strict' as const, typeSymbol: 'dsh-github-integration#JsonResult', create: () => JSON_RESULT },
   }
 }
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type Re
 import type { ClientContext, SessionId, WorkspaceId } from '@deepseek-ai/dsh-client-runtime/client'
 import type { ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client'
 import type { PropsLocale, PropsRuntime, TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
-import type { SettingsScope, SettingsScopeSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ConfigForm, ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
@@ -27,7 +27,7 @@ import githubRemote, { type GitHubRemoteNamespace } from '../remote.ts'
 import { en, NS, zh } from './locales.ts'
 import { installGitHubStyles } from './styles.ts'
 
-const SETTINGS_NAMESPACE = 'github-integration'
+const SETTINGS_NAMESPACE = 'include:github-integration'
 
 type RemoteFace = { github: GitHubRemoteNamespace }
 type GitHubT = TranslateNS<'github'>
@@ -606,15 +606,15 @@ function GitHubSettingsTab({
   remote,
   t,
 }: PropsLocale<'github'> & {
-  scope: SettingsScope<GitHubAppSettings>
+  scope: ConfigForm<GitHubAppSettings>
   remote: RemoteFace
 }): ReactNode {
-  // SettingsScopeController exposes prototype methods that use `this`. Passing
+  // ConfigFormController exposes prototype methods that use `this`. Passing
   // them directly to useSyncExternalStore would detach them from the scope and
   // make the settings tab crash while reading the controller store.
   const subscribe = useCallback((listener: () => void) => scope.subscribe(listener), [scope])
   const getSnapshot = useCallback(() => scope.getSnapshot(), [scope])
-  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot) as SettingsScopeSnapshot<GitHubAppSettings>
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot) as ConfigFormSnapshot<GitHubAppSettings>
   const value = snapshot.value ?? DEFAULT_GITHUB_APP_SETTINGS
   const [settingsDraft, setSettingsDraft] = useState<GitHubAppSettings>(() => ({ ...value }))
   const editedSettingsFields = useRef(new Set<keyof GitHubAppSettings>())
@@ -747,7 +747,7 @@ function GitHubSettingsTab({
   </section>
 }
 
-export const inject = ['slots', 'remote', 'sessions', 'workspaces', 'settingsScope', 'locale']
+export const inject = ['slots', 'remote', 'sessions', 'workspaces', 'configForms', 'locale']
 
 export async function apply(ctx: ClientContext): Promise<() => Promise<void>> {
   installGitHubStyles()
@@ -756,7 +756,7 @@ export async function apply(ctx: ClientContext): Promise<() => Promise<void>> {
   const remoteService = ctx.remote
   const remoteDisposer = await remoteService.$mount(githubRemote)
   const remote: RemoteFace = { github: ctx.get('remote.github') as GitHubRemoteNamespace }
-  const settingsScope = ctx.settingsScope.bind<GitHubAppSettings>({ namespace: SETTINGS_NAMESPACE })
+  const settingsScope = ctx.configForms.get<GitHubAppSettings>(SETTINGS_NAMESPACE)
   ctx.slots.inject('conversation.view', () => ctx.slots.register({
     name: 'conversation.view',
     id: 'github',
@@ -781,7 +781,7 @@ export async function apply(ctx: ClientContext): Promise<() => Promise<void>> {
     inject: () => ({ scope: settingsScope, remote }),
   }, GitHubSettingsTab))
   return async () => {
-    await settingsScope.dispose()
+    // configForms owns the shared form; only dispose our Remote contribution.
     await remoteDisposer()
   }
 }

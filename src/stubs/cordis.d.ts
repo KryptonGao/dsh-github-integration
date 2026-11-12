@@ -1,4 +1,5 @@
 export class Context {
+  readonly fiber: { readonly effectiveConfig: unknown }
   get<T = any>(name: string): T
   inject(dependencies: readonly string[], callback: (ctx: any) => void): unknown
   effect(callback: () => unknown, label?: string): () => void

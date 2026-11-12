@@ -17,7 +17,7 @@
 | **Issues** | 浏览未关闭的问题、查看描述和评论，并把问题作为不可信外部内容带入新的 Harness 对话进行修复 |
 | **Pull requests** | 浏览未关闭的 PR，查看目标/来源分支、增删行数和变更文件 |
 | **Changes** | 查看本地状态和 diff，选择文件暂存、创建 commit、推送分支，并创建 Pull Request |
-| **Settings → GitHub** | 通过系统浏览器连接 GitHub、管理仓库访问权限或断开连接 |
+| **Settings → 内置插件 → GitHub** | 通过系统浏览器连接 GitHub、管理仓库访问权限或断开连接 |
 
 ## 使用
 
@@ -36,7 +36,7 @@ dsh plugin --profile web add "$PWD"
 ### 2. 连接 GitHub
 
 1. 启动或刷新 DeepSeek Harness 的 `web` profile。
-2. 打开 **Settings → GitHub**，点击 **Connect GitHub**。
+2. 打开 **Settings → 内置插件 → GitHub**，点击 **Connect GitHub**。
 3. 在系统浏览器中完成 GitHub App 授权，回到 Harness 等待连接状态变为 **Connected**。
 4. 如需调整仓库范围，点击 **Manage repository access**。
 5. 确认当前 Workspace 的 `origin` 指向 `github.com` 上的仓库（HTTPS 或 SSH）。
@@ -139,3 +139,21 @@ tests/                   Git、认证、GitHub API 和 Client 行为测试
 ## 许可证
 
 [Apache-2.0 license](./LICENSE)
+
+## Desktop 0.2.2-rc.1
+
+本版本已适配 Desktop 0.2.2-rc.1：Host 设置通过插件的 `Config` 暴露，客户端通过
+`configForms.get('include:github-integration')` 读写，Typert strict codec 提供 `create()` 工厂。
+源码及随仓库提交的构建产物均已同步，不需要额外执行此前的本地修复安装器。
+
+先启动一次 Desktop 初始化 profile，再用 Command+Q 完全退出。
+使用 Desktop 应用提供的 dsh 命令安装仓库目录：
+
+```sh
+dsh plugin --profile desktop add "$PWD"
+```
+
+重新打开 Desktop，启用插件，在 **设置 → 内置插件 → GitHub** 完成连接。
+`web` 和 `desktop` 的插件启用状态独立；上面的 Web 安装命令不会安装到 Desktop。
+可以直接运行 `node scripts/verify-desktop-client.cjs` 检查已提交客户端构建文件的
+Remote codec、设置标签注册及共享配置表单生命周期，无需启动 Desktop。

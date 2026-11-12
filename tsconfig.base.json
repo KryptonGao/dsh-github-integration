@@ -33,7 +33,7 @@
       "@deepseek-ai/dsh-api-remotes/client": ["src/stubs/empty.d.ts"],
       "@deepseek-ai/dsh-client-ui-layout/client": ["src/stubs/empty.d.ts"],
       "@deepseek-ai/dsh-client-ui-sidebar/client": ["src/stubs/empty.d.ts"],
-      "@deepseek-ai/dsh-client-ui-settings/client": ["src/stubs/empty.d.ts"],
+      "@deepseek-ai/dsh-client-ui-settings/client": ["src/stubs/settings-client.d.ts"],
       "@deepseek-ai/dsh-client-ui-conversation/client": ["src/stubs/empty.d.ts"]
     }
   }

@@ -35,8 +35,8 @@ function createHarness(state: MemoryState, configuredSettings: GitHubAppSettings
   const values = new Map<string, string>([['GITHUB_APP_CLIENT_SECRET', 'client-secret']])
   const routes: Array<{ handler: (request: any, response: any) => Promise<void> | void }> = []
   const ctx = {
+    fiber: { effectiveConfig: configuredSettings },
     get(name: string) {
-      if (name === 'settings') return { get: () => configuredSettings }
       if (name === 'credentials') return {
         resolve: async (ref: string) => values.has(ref) ? { value: values.get(ref), source: 'test' } : undefined,
         set: async (ref: string, value: string) => { values.set(ref, value) },
